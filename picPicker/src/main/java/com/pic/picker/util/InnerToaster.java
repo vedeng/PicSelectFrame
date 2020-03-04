@@ -1,0 +1,61 @@
+package com.pic.picker.util;
+
+import android.content.Context;
+import android.widget.Toast;
+
+
+public class InnerToaster {
+
+
+    public interface IToaster {
+        void show(String msg);
+
+        void show(int resId);
+
+    }
+
+    private InnerToaster(Context aContext) {
+        mContext = aContext.getApplicationContext();
+    }
+
+    private static volatile InnerToaster instance;
+    private Context mContext;
+
+    public void setIToaster(IToaster aIToaster) {
+        mIToaster = aIToaster;
+    }
+
+    private IToaster mIToaster;
+
+
+    public static synchronized InnerToaster obj(Context aContext) {
+        if (instance == null) {
+            instance = new InnerToaster(aContext);
+        }
+        return instance;
+    }
+
+
+    public void show(String msg) {
+        if (mIToaster != null) {
+            mIToaster.show(msg);
+            return;
+        }
+        if (mContext == null) {
+            return;
+        }
+        Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
+
+    }
+
+    public void show(int resId) {
+        if (mIToaster != null) {
+            mIToaster.show(resId);
+            return;
+        }
+        if (mContext == null) {
+            return;
+        }
+        Toast.makeText(mContext, resId, Toast.LENGTH_SHORT).show();
+    }
+}

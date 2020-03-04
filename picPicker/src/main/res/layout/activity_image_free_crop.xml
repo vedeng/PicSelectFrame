@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:custom="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="#000"
+              android:orientation="vertical">
+
+    <include layout="@layout/include_top_bar"/>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.crop.cropview.FreeCropImageView
+            android:id="@+id/freeCropImageView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="@dimen/ip_handle"
+            custom:scv_background_color="@color/ip_crop_back"
+            custom:scv_crop_mode="fit_image"
+            custom:scv_frame_color="@color/ip_crop_frame"
+            custom:scv_frame_stroke_weight="1dp"
+            custom:scv_guide_color="@color/ip_crop_guide"
+            custom:scv_guide_show_mode="show_always"
+            custom:scv_guide_stroke_weight="1dp"
+            custom:scv_handle_color="@color/ip_crop_handle"
+            custom:scv_handle_show_mode="show_always"
+            custom:scv_handle_size="@dimen/ip_handle"
+            custom:scv_min_frame_size="50dp"
+            custom:scv_touch_padding="8dp"
+            />
+
+        <RelativeLayout
+            android:id="@+id/ip_rl_box"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:visibility="gone"
+            android:layout_gravity="center"
+            android:background="@color/ip_pb_back_color"
+            android:padding="0dp">
+
+            <ProgressBar
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_centerInParent="true"
+                android:indeterminateTint="@color/ip_pb_color"
+                />
+
+        </RelativeLayout>
+    </FrameLayout>
+</LinearLayout>
