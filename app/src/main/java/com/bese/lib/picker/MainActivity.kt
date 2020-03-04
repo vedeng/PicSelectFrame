@@ -27,6 +27,11 @@ import kotlinx.android.synthetic.main.item_grid_pic.view.*
 import retrofit2.Call
 import java.io.File
 
+/**
+ * <>
+ *
+ * @author bei deng
+ */
 class MainActivity : AppCompatActivity() {
 
     companion object {
