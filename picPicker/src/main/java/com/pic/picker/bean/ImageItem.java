@@ -10,6 +10,7 @@ public class ImageItem implements Serializable, Parcelable {
     public String name;
     public String path;
     public String mask;
+    public String compareInfo;
     public int flag;
     public long size;
     public int width;
@@ -21,7 +22,15 @@ public class ImageItem implements Serializable, Parcelable {
     public boolean equals(Object o) {
         if (o instanceof ImageItem) {
             ImageItem item = (ImageItem) o;
-            return this.path.equalsIgnoreCase(item.path) && this.addTime == item.addTime;
+            if (this.path != null) {
+                if (this.compareInfo != null) {
+                    return this.path.equalsIgnoreCase(item.path) && this.compareInfo.equals(item.compareInfo);
+                } else {
+                    return this.path.equalsIgnoreCase(item.path);
+                }
+            } else {
+                return false;
+            }
         }
 
         return super.equals(o);
@@ -38,6 +47,7 @@ public class ImageItem implements Serializable, Parcelable {
         dest.writeString(this.name);
         dest.writeString(this.path);
         dest.writeString(this.mask);
+        dest.writeString(this.compareInfo);
         dest.writeLong(this.size);
         dest.writeInt(this.flag);
         dest.writeInt(this.width);
@@ -53,6 +63,7 @@ public class ImageItem implements Serializable, Parcelable {
         this.name = in.readString();
         this.path = in.readString();
         this.mask = in.readString();
+        this.compareInfo = in.readString();
         this.size = in.readLong();
         this.flag = in.readInt();
         this.width = in.readInt();
