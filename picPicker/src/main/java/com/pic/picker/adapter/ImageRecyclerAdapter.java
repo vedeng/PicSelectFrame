@@ -2,11 +2,16 @@ package com.pic.picker.adapter;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.pic.picker.ImagePicker;
 import com.pic.picker.R;
@@ -18,6 +23,7 @@ import com.pic.picker.util.Utils;
 import com.pic.picker.view.SuperCheckBox;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.RecyclerView;
@@ -154,9 +160,7 @@ public class ImageRecyclerAdapter extends RecyclerView.Adapter<ViewHolder> {
                 @Override
                 public void onClick(View v) {
                     cbCheck.setChecked(!cbCheck.isChecked());
-                    int selectLimit = imagePicker.getSelectLimit();
-                    if (cbCheck.isChecked() && mSelectedImages.size() >= selectLimit) {
-                        InnerToaster.obj(mActivity).show(mActivity.getString(R.string.ip_select_limit, selectLimit));
+                    if (cbCheck.isChecked() && !checkSelectAllow(imageItem)) {
                         cbCheck.setChecked(false);
                         mask.setVisibility(View.GONE);
                     } else {
@@ -181,6 +185,65 @@ public class ImageRecyclerAdapter extends RecyclerView.Adapter<ViewHolder> {
             imagePicker.getImageLoader().displayImage(mActivity, imageItem.path, ivThumb, mImageSize, mImageSize);
         }
 
+    }
+
+    private boolean checkSelectAllow(ImageItem imageItem) {
+        int limit = imagePicker.getSelectLimit();
+        // 允许选择数量上限超限
+        if (mSelectedImages.size() >= limit) {
+            if (!imagePicker.isSelectLimitShowDialog()) {
+                InnerToaster.obj(mActivity).show(mActivity.getString(R.string.ip_select_limit, limit));
+            } else {
+                final Dialog d = new Dialog(mActivity);
+                if (d.getWindow() != null) {
+                    d.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                }
+                View view = LayoutInflater.from(mActivity).inflate(R.layout.dialog_limit_style, null);
+                TextView tipTv = (TextView) view.findViewById(R.id.select_limit_tip);
+                TextView knowTv = (TextView) view.findViewById(R.id.select_limit_know);
+                tipTv.setText(mActivity.getResources().getString(R.string.select_limit_tip, limit));
+                knowTv.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) { d.dismiss(); }
+                });
+                d.setContentView(view);
+                d.show();
+            }
+            return false;
+        }
+
+        // 图片格式限制
+        if (imagePicker.isFilterSelectFormat()) {
+            if (!TextUtils.isEmpty(imageItem.name)) {
+                String [] split = imageItem.name.split("\\.");
+                String fix = split[split.length - 1];
+                // 先查允许格式，可能取得的后缀不规范，导致错误的不被限制
+                if (imagePicker.getFormatAllowCollection().size() > 0 && !imagePicker.getFormatAllowCollection().contains(fix)) {
+                    // 允许列表非空，代表有限允许；为空代表全允许；允许列表中无匹配，代表不允许此格式
+                    StringBuilder allow = new StringBuilder();
+                    for (String s : imagePicker.getFormatAllowCollection()) {
+                        allow.append(s.toUpperCase()).append("、");
+                    }
+                    InnerToaster.obj(mActivity).show("文件格式只支持" + allow.substring(0, allow.length() - 1));
+                    return false;
+                }
+                if (imagePicker.getFormatDisallowCollection().size() > 0 && imagePicker.getFormatDisallowCollection().contains(fix)) {
+                    // 禁止列表非空，代表有限禁止；为空代表无禁止；禁止列表中有匹配，代表不允许此格式
+                    InnerToaster.obj(mActivity).show("文件格式不支持" + fix.toUpperCase());
+                    return false;
+                }
+            }
+        }
+
+        // 单张选择大小限制
+        float len = imagePicker.getSelectLimitSize();
+        if (len > 0f && imageItem.size > len * 1024 * 1024) {
+            // 大小限制打开，检查大小是否超限
+            InnerToaster.obj(mActivity).show("文件大小不能超过" + ((int) len) + "M");
+            return false;
+        }
+
+        return true;
     }
 
     private class CameraViewHolder extends ViewHolder{

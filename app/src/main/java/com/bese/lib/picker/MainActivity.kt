@@ -103,8 +103,12 @@ class MainActivity : AppCompatActivity() {
         } else {
             // 图库
             ImagePicker.getInstance().run {
-                selectLimit = 9 - selectPathList.size + (if (hasAddIcon) 1 else 0)
+                selectLimit = 3 - selectPathList.size + (if (hasAddIcon) 1 else 0)
                 isMultiMode = true
+                isSelectLimitShowDialog = true
+                isFilterSelectFormat = true
+                formatAllowCollection = arrayListOf("jpg", "jpeg", "png", "bmp")
+                selectLimitSize = 2f
                 val intent = Intent(this@MainActivity, ImageGridActivity::class.java)
                 // 如果定制进入相册就选中之前的已选，需要传参。并且需要更改接收返回值时清空之前已选列表。选择上限也需要改。
 //                intent.putExtra(ImageGridActivity.EXTRAS_IMAGES, selectPathList.filter { it.name != ADD_FLAG } as? ArrayList<ImageItem>)

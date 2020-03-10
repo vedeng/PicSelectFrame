@@ -30,7 +30,11 @@ import java.util.Locale;
 
 import androidx.core.content.FileProvider;
 
-
+/**
+ * 图片选择器配置类
+ *
+ * @author  Author
+ */
 public class ImagePicker {
 
     public static final String TAG = ImagePicker.class.getSimpleName();
@@ -45,10 +49,21 @@ public class ImagePicker {
     public static final String EXTRA_IMAGE_ITEMS = "extra_image_items";
     public static final String EXTRA_FROM_ITEMS = "extra_from_items";
 
+    /** 数量选择限制提示是弹窗还是吐司 */
+    private boolean selectLimitShowDialog = false;
+    /** 选中图片大小限制, 单位默认是M。0代表无限制 */
+    private float selectLimitSize = 0f;
+    /** 是否限制选择图片格式 */
+    private boolean filterSelectFormat = false;
+    /** 选中图片允许格式列表, 优先级比禁用格式列表高 */
+    private ArrayList<String> formatAllowCollection = new ArrayList<>();
+    /** 选中图片禁用格式列表 */
+    private ArrayList<String> formatDisallowCollection = new ArrayList<>();
+
     private boolean multiMode = true;
     private int selectLimit = 9;
-    private boolean crop = true;
-    private boolean showCamera = true;
+    private boolean crop = false;
+    private boolean showCamera = false;
     private boolean isSaveRectangle = false;
     private int outPutX = 800;
     private int outPutY = 800;
@@ -81,6 +96,46 @@ public class ImagePicker {
             }
         }
         return mInstance;
+    }
+
+    public boolean isSelectLimitShowDialog() {
+        return selectLimitShowDialog;
+    }
+
+    public void setSelectLimitShowDialog(boolean selectLimitShowDialog) {
+        this.selectLimitShowDialog = selectLimitShowDialog;
+    }
+
+    public float getSelectLimitSize() {
+        return selectLimitSize;
+    }
+
+    public void setSelectLimitSize(float selectLimitSize) {
+        this.selectLimitSize = selectLimitSize;
+    }
+
+    public boolean isFilterSelectFormat() {
+        return filterSelectFormat;
+    }
+
+    public void setFilterSelectFormat(boolean filterSelectFormat) {
+        this.filterSelectFormat = filterSelectFormat;
+    }
+
+    public ArrayList<String> getFormatAllowCollection() {
+        return formatAllowCollection;
+    }
+
+    public void setFormatAllowCollection(ArrayList<String> formatAllowCollection) {
+        this.formatAllowCollection = formatAllowCollection;
+    }
+
+    public ArrayList<String> getFormatDisallowCollection() {
+        return formatDisallowCollection;
+    }
+
+    public void setFormatDisallowCollection(ArrayList<String> formatDisallowCollection) {
+        this.formatDisallowCollection = formatDisallowCollection;
     }
 
     public boolean isMultiMode() {
