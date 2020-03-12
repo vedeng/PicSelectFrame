@@ -3,7 +3,6 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
-    android:background="#00000000"
     android:gravity="center">
 
     <LinearLayout
@@ -11,6 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:background="@drawable/shape_r12"
+        android:backgroundTint="#ffffff"
         android:gravity="center_horizontal"
         android:orientation="vertical">
 
