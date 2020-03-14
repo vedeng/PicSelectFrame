@@ -8,7 +8,8 @@ class BaseApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        APICreator.init("http://qa.goapi.vedeng.com/")
+        // Retrofit框架初始化 ，传入网络基本域名
+        APICreator.init("http://127.0.0.1/")
     }
 
 }

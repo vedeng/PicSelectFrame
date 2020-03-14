@@ -44,6 +44,8 @@ public class ImageGridActivity extends ImageBaseActivity implements ImageDataSou
 
     private ImagePicker imagePicker;
 
+    private int ITEM_SPAN_COUNT = 3;
+
     private boolean isOrigin = false;
     private View mFooterBar;
     private Button mBtnOk;
@@ -89,6 +91,7 @@ public class ImageGridActivity extends ImageBaseActivity implements ImageDataSou
                 checkToCapture();
             }
             ArrayList<ImageItem> images = (ArrayList<ImageItem>) data.getSerializableExtra(EXTRAS_IMAGES);
+            ITEM_SPAN_COUNT = imagePicker.getItemSpanCount();
             imagePicker.setSelectedImages(images);
         }
 
@@ -113,7 +116,7 @@ public class ImageGridActivity extends ImageBaseActivity implements ImageDataSou
 
         mImageFolderAdapter = new ImageFolderAdapter(this, null);
         mRecyclerAdapter = new ImageRecyclerAdapter(this, null);
-        mRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
+        mRecyclerView.setLayoutManager(new GridLayoutManager(this, ITEM_SPAN_COUNT));
         mRecyclerView.setAdapter(mRecyclerAdapter);
         onImageSelected(0, null, false);
 

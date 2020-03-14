@@ -15,7 +15,7 @@ import java.util.HashMap
 interface API {
 
     @Multipart
-    @POST( "fileUpload/fileUploadImgForAndroid")
-    fun uploadFile(@PartMap request: HashMap<String, String>, @Part filePart: MultipartBody.Part): Call<PicUploadResponse>
+    @POST( "fileUpload")
+    fun uploadFile(@Part filePart: MultipartBody.Part): Call<PicUploadResponse>
 
 }

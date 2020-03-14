@@ -10,9 +10,7 @@ import java.io.File
  */
 class PicUploadRequest(var file: File?, var processCallback: ProcessCallback?) : BaseRequest<Any, PicUploadResponse>(file?.path) {
     override fun getCall(): Call<PicUploadResponse> {
-        val param = HashMap<String, String>()
-        param["type"] = "TestUploadFunction"
-        return NetTool.getApi().uploadFile(param, getProcessMultiPart(file ?: File("-"), processCallback, file?.name ?: "--"))
+        return NetTool.getApi().uploadFile(getProcessMultiPart(file ?: File("-"), processCallback, file?.name ?: "--"))
     }
 
     data class Param(var file: File?)

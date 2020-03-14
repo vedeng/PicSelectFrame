@@ -59,6 +59,8 @@ public class ImagePicker {
     private ArrayList<String> formatAllowCollection = new ArrayList<>();
     /** 选中图片禁用格式列表 */
     private ArrayList<String> formatDisallowCollection = new ArrayList<>();
+    /** 图库展示一行几个，默认3 */
+    private int itemSpanCount = 3;
 
     private boolean multiMode = true;
     private int selectLimit = 9;
@@ -136,6 +138,14 @@ public class ImagePicker {
 
     public void setFormatDisallowCollection(ArrayList<String> formatDisallowCollection) {
         this.formatDisallowCollection = formatDisallowCollection;
+    }
+
+    public int getItemSpanCount() {
+        return itemSpanCount;
+    }
+
+    public void setItemSpanCount(int itemSpanCount) {
+        this.itemSpanCount = itemSpanCount;
     }
 
     public boolean isMultiMode() {

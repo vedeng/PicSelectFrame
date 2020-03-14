@@ -35,7 +35,13 @@ import java.io.File
 class MainActivity : AppCompatActivity() {
 
     companion object {
+        const val CODE_SELECT = 101
+        const val CODE_PREVIEW = 102
+
         const val ADD_FLAG = "add+"
+        const val FLAG_PICKER_LIMIT = 6
+
+        var SELECT_WITH_LIST = false
     }
 
     /** 当前选择的所有图片 */
@@ -56,6 +62,9 @@ class MainActivity : AppCompatActivity() {
         main_select?.setOnClickListener {
             openSelect()
         }
+        rb_select_with_list?.setOnCheckedChangeListener { _, ch ->
+            SELECT_WITH_LIST = ch
+        }
 
         main_rec?.adapter = picAdapter
 
@@ -75,7 +84,7 @@ class MainActivity : AppCompatActivity() {
                 }
             })
         }, View.OnClickListener {
-            XXPermissions.with(this).permission(Manifest.permission.WRITE_EXTERNAL_STORAGE).request(object : OnPermission {
+            XXPermissions.with(this).permission(Manifest.permission.READ_EXTERNAL_STORAGE).request(object : OnPermission {
                 override fun noPermission(denied: MutableList<String>?, quick: Boolean) {
                     if (quick) { ToastUtils.showShort("缺少写入存储权限，请去设置页面打开相应权限") }
                     mPhotoPopupWindow?.dismiss()
@@ -98,21 +107,27 @@ class MainActivity : AppCompatActivity() {
                 isMultiMode = false
                 isCrop = false
                 val intent = Intent(this@MainActivity, ImageGridActivity::class.java).putExtra(ImageGridActivity.EXTRAS_TAKE_PICKERS, true)
-                startActivityForResult(intent, 101)
+                startActivityForResult(intent, CODE_SELECT)
             }
         } else {
             // 图库
             ImagePicker.getInstance().run {
-                selectLimit = 3 - selectPathList.size + (if (hasAddIcon) 1 else 0)
-                isMultiMode = true
-                isSelectLimitShowDialog = true
-                isFilterSelectFormat = true
-                formatAllowCollection = arrayListOf("jpg", "jpeg", "png", "bmp")
-                selectLimitSize = 2f
                 val intent = Intent(this@MainActivity, ImageGridActivity::class.java)
-                // 如果定制进入相册就选中之前的已选，需要传参。并且需要更改接收返回值时清空之前已选列表。选择上限也需要改。
-//                intent.putExtra(ImageGridActivity.EXTRAS_IMAGES, selectPathList.filter { it.name != ADD_FLAG } as? ArrayList<ImageItem>)
-                startActivityForResult(intent, 101)
+                if (SELECT_WITH_LIST) {
+                    // 如果定制进入相册就选中之前的已选，需要传参。并且需要更改接收返回值时清空之前已选列表。选择上限也需要改。
+                    intent.putExtra(
+                        ImageGridActivity.EXTRAS_IMAGES,
+                        selectPathList.filter { it.name != ADD_FLAG } as? ArrayList<ImageItem>)
+                    selectLimit = FLAG_PICKER_LIMIT - selectPathList.size + (if (hasAddIcon) 1 else 0)
+                } else {
+                    selectLimit = FLAG_PICKER_LIMIT
+                }
+                isMultiMode = true
+                isSelectLimitShowDialog = true      // 选图超限 以弹窗提示
+                isFilterSelectFormat = true     // 开启选图限定类型功能
+                formatAllowCollection = arrayListOf("jpg", "jpeg", "png", "bmp")    // 定义选图的允许类型
+                selectLimitSize = 3f        // 选图大小限制参数，单位M
+                startActivityForResult(intent, CODE_SELECT)
             }
         }
     }
@@ -124,15 +139,16 @@ class MainActivity : AppCompatActivity() {
             .putExtra(ImagePicker.EXTRA_IMAGE_ITEMS, preview)
             .putExtra(ImagePicker.EXTRA_SELECTED_IMAGE_POSITION, if (currentPosition < 0) 0 else currentPosition)
             .putExtra(ImagePicker.EXTRA_FROM_ITEMS, true)
-        startActivityForResult(intentPreview, 102)
+        startActivityForResult(intentPreview, CODE_PREVIEW)
     }
 
     private var picAdapter = object : BaseQuickAdapter<ImageItem?, BaseViewHolder>(R.layout.item_grid_pic) {
         override fun convert(helper: BaseViewHolder, item: ImageItem?) {
             item?.run {
                 if (item.name == ADD_FLAG) {
+                    Log.e("设置add图====", "-----")
                     // 展示ADD图
-                    helper.itemView.item_img?.setBackgroundResource(R.drawable.ic_add)
+                    helper.itemView.item_img?.setImageResource(R.drawable.ic_add)
                     helper.itemView.item_img?.setOnClickListener { openSelect() }
                     helper.itemView.item_delete?.visibility = View.GONE
                     helper.itemView.item_upload_process?.visibility = View.GONE
@@ -143,7 +159,7 @@ class MainActivity : AppCompatActivity() {
                         helper.itemView.item_delete?.setOnClickListener {
                             removeFromList(item)
                         }
-                        if (item.flag < 100) {
+                        if (item.flag in 1..99) {
                             helper.itemView.item_upload_process?.visibility = View.VISIBLE
                             helper.itemView.item_mask?.visibility = View.VISIBLE
                             helper.itemView.item_upload_process?.progress = item.flag
@@ -157,7 +173,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     } else {
                         // 展示错误图
-                        helper.itemView.item_img?.setBackgroundResource(R.drawable.ic_placeholder)
+                        helper.itemView.item_img?.setImageResource(R.drawable.ic_placeholder)
                         helper.itemView.item_img?.setOnClickListener { gotoPreviewPic(helper.adapterPosition) }
                         helper.itemView.item_delete?.visibility = View.GONE
                         helper.itemView.item_upload_process?.visibility = View.GONE
@@ -175,30 +191,40 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 101) {
+        if (requestCode == CODE_SELECT) {
             // 选图
             val list: ArrayList<ImageItem>? = data?.getSerializableExtra(ImagePicker.EXTRA_RESULT_ITEMS) as? ArrayList<ImageItem>
             if (list?.size ?: 0 > 0) {
-                selectPathList.removeAll(selectPathList.filter { it.name == ADD_FLAG })
+                if (SELECT_WITH_LIST) {
+                    // 带着列表选图，会有数据重复。需要清空当前列表
+                    selectPathList.clear()
+                } else {
+                    // 添加到现有列表
+                    selectPathList.removeAll(selectPathList.filter { it.name == ADD_FLAG })
+                }
+
                 selectPathList.addAll(list!!)
                 appendAddIconToSelectList()
-                picAdapter.replaceData(selectPathList)
+                replaceRecData(selectPathList)
                 setSelectPicPaths()
                 // 上传选中图片 - 支持批量
                 list.forEach {
+                    Log.e("返回列表1=====", " -- ${it.name}")
                     batchUploadPic(it.path)
                 }
             }
-        } else if (requestCode == 102) {
+        } else if (requestCode == CODE_PREVIEW) {
             val list: ArrayList<ImageItem>? = data?.getSerializableExtra(ImagePicker.EXTRA_IMAGE_ITEMS) as? ArrayList<ImageItem>
+
             if (list?.size ?: 0 > 0) {
-                selectPathList.removeAll(selectPathList.filter { it.name == ADD_FLAG })
+                selectPathList.clear()
                 selectPathList.addAll(list!!)
                 appendAddIconToSelectList()
-                picAdapter.replaceData(selectPathList)
+                replaceRecData(selectPathList)
                 setSelectPicPaths()
                 // 上传选中图片
                 list.forEach {
+                    Log.e("返回列表2=====", " -- ${it.name}")
                     batchUploadPic(it.path)
                 }
             }
@@ -211,8 +237,8 @@ class MainActivity : AppCompatActivity() {
             selectPathList.removeAll(selectPathList.filter { it.name == ADD_FLAG })
         }
         // 再判断列表是否需要添加一个加号图标
-        if (selectPathList.size < 9) {
-            selectPathList.add(ImageItem().apply { name = ADD_FLAG; path = "-" })
+        if (selectPathList.size < FLAG_PICKER_LIMIT) {
+            selectPathList.add(ImageItem().apply { name = ADD_FLAG; path = "" })
             hasAddIcon = true
         } else {
             hasAddIcon = false
@@ -237,11 +263,22 @@ class MainActivity : AppCompatActivity() {
         val c = System.currentTimeMillis()
         if (c - interval > 150 || withDone) {
             interval = c
-            picAdapter.replaceData(selectPathList)
+            replaceRecData(selectPathList)
         }
     }
 
+    private fun replaceRecData(list: ArrayList<ImageItem>?) {
+        list?.run {
+            forEach {
+                Log.e("展示====", it.name + "    -----      " + it.path)
+            }
+            picAdapter.replaceData(list)
+        }
+    }
 
+    /**
+     * 带进度回调的上传请求
+     */
     private fun batchUploadPic(filePath: String?) {
         val file = File(filePath ?: "")
         if (!file.exists()) {
