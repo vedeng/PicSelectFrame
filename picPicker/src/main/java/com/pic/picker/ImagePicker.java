@@ -49,18 +49,22 @@ public class ImagePicker {
     public static final String EXTRA_IMAGE_ITEMS = "extra_image_items";
     public static final String EXTRA_FROM_ITEMS = "extra_from_items";
 
-    /** 数量选择限制提示是弹窗还是吐司 */
-    private boolean selectLimitShowDialog = false;
+    /** 图库展示一行几个，默认3 */
+    private int itemSpanCount = 3;
     /** 选中图片大小限制, 单位默认是M。0代表无限制 */
     private float selectLimitSize = 0f;
+    /** 数量选择限制提示是弹窗还是吐司 */
+    private boolean selectLimitShowDialog = false;
     /** 是否限制选择图片格式 */
     private boolean filterSelectFormat = false;
     /** 选中图片允许格式列表, 优先级比禁用格式列表高 */
     private ArrayList<String> formatAllowCollection = new ArrayList<>();
     /** 选中图片禁用格式列表 */
     private ArrayList<String> formatDisallowCollection = new ArrayList<>();
-    /** 图库展示一行几个，默认3 */
-    private int itemSpanCount = 3;
+    /** 选择图片选中是否带排序数字 */
+    private boolean selectPicWithSortNumber = false;
+    /** 上限为1时，是否允许多选模式：交互方式有区别 */
+    private boolean changeSingleModeWhenLimitOne = false;
 
     private boolean multiMode = true;
     private int selectLimit = 9;
@@ -85,6 +89,9 @@ public class ImagePicker {
 
     private static ImagePicker mInstance;
 
+    /** 选中项Path列表：可用于记录选中顺序 */
+    private ArrayList<String> selectSortList = new ArrayList<>();
+
 
     private ImagePicker() {
     }
@@ -98,6 +105,22 @@ public class ImagePicker {
             }
         }
         return mInstance;
+    }
+
+    public boolean isChangeSingleModeWhenLimitOne() {
+        return changeSingleModeWhenLimitOne;
+    }
+
+    public void setChangeSingleModeWhenLimitOne(boolean changeSingleModeWhenLimitOne) {
+        this.changeSingleModeWhenLimitOne = changeSingleModeWhenLimitOne;
+    }
+
+    public boolean isSelectPicWithSortNumber() {
+        return selectPicWithSortNumber;
+    }
+
+    public void setSelectPicWithSortNumber(boolean selectPicWithSortNumber) {
+        this.selectPicWithSortNumber = selectPicWithSortNumber;
     }
 
     public boolean isSelectLimitShowDialog() {
@@ -138,6 +161,14 @@ public class ImagePicker {
 
     public void setFormatDisallowCollection(ArrayList<String> formatDisallowCollection) {
         this.formatDisallowCollection = formatDisallowCollection;
+    }
+
+    public ArrayList<String> getSelectSortList() {
+        return selectSortList;
+    }
+
+    public void setSelectSortList(ArrayList<String> selectSortList) {
+        this.selectSortList = selectSortList;
     }
 
     public int getItemSpanCount() {
@@ -384,8 +415,10 @@ public class ImagePicker {
     public void addSelectedImageItem(int position, ImageItem item, boolean isAdd) {
         if (isAdd) {
             mSelectedImages.add(item);
+            selectSortList.add(item.path);
         } else {
             mSelectedImages.remove(item);
+            selectSortList.remove(item.path);
         }
         notifyImageSelectedChanged(position, item, isAdd);
     }
@@ -420,6 +453,13 @@ public class ImagePicker {
         outPutY = savedInstanceState.getInt("outPutY");
         focusWidth = savedInstanceState.getInt("focusWidth");
         focusHeight = savedInstanceState.getInt("focusHeight");
+        itemSpanCount = savedInstanceState.getInt("itemSpanCount");
+        selectLimitSize = savedInstanceState.getFloat("selectLimitSize");
+        filterSelectFormat = savedInstanceState.getBoolean("filterSelectFormat");
+        selectLimitShowDialog = savedInstanceState.getBoolean("selectLimitShowDialog");
+        formatAllowCollection = savedInstanceState.getStringArrayList("formatAllowCollection");
+        formatDisallowCollection = savedInstanceState.getStringArrayList("formatDisallowCollection");
+        selectPicWithSortNumber = savedInstanceState.getBoolean("selectPicWithSortNumber");
     }
 
 
@@ -428,6 +468,13 @@ public class ImagePicker {
         outState.putSerializable("takeImageFile", takeImageFile);
         outState.putSerializable("imageLoader", imageLoader);
         outState.putSerializable("style", style);
+        outState.putInt("itemSpanCount", itemSpanCount);
+        outState.putFloat("selectLimitSize", selectLimitSize);
+        outState.putBoolean("filterSelectFormat", filterSelectFormat);
+        outState.putBoolean("selectLimitShowDialog", selectLimitShowDialog);
+        outState.putStringArrayList("formatAllowCollection", formatAllowCollection);
+        outState.putStringArrayList("formatDisallowCollection", formatDisallowCollection);
+        outState.putBoolean("selectPicWithSortNumber", selectPicWithSortNumber);
         outState.putBoolean("multiMode", multiMode);
         outState.putBoolean("crop", crop);
         outState.putBoolean("showCamera", showCamera);

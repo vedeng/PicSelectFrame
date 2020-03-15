@@ -6,11 +6,18 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.pic.picker.DataHolder;
 import com.pic.picker.ImageDataSource;
@@ -27,12 +34,6 @@ import com.pic.picker.view.GridSpacingItemDecoration;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 
 public class ImageGridActivity extends ImageBaseActivity implements ImageDataSource.OnImagesLoadedListener, OnImageItemClickListener, ImagePicker.OnImageSelectedListener, View.OnClickListener {
@@ -79,9 +80,20 @@ public class ImageGridActivity extends ImageBaseActivity implements ImageDataSou
         imagePicker = ImagePicker.getInstance();
         imagePicker.clear();
         imagePicker.addOnImageSelectedListener(this);
-        if (imagePicker.getSelectLimit() == 0 || imagePicker.getSelectLimit() == 1) {
+        // 上限不合法 当作单选处理
+        if (imagePicker.getSelectLimit() < 1) {
             imagePicker.setSelectLimit(1);
             imagePicker.setMultiMode(false);
+        }
+        // 上限数量和选择模式冲突，自动更改选择模式
+        if (imagePicker.getSelectLimit() > 1) {
+            imagePicker.setMultiMode(true);
+        }
+        // 上限为1，根据标记判断是否使用单选模式
+        if (imagePicker.getSelectLimit() == 1) {
+            if (imagePicker.isMultiMode() && imagePicker.isChangeSingleModeWhenLimitOne()) {
+                imagePicker.setMultiMode(false);
+            }
         }
 
         Intent data = getIntent();
@@ -287,10 +299,17 @@ public class ImageGridActivity extends ImageBaseActivity implements ImageDataSou
             mBtnPre.setTextColor(ContextCompat.getColor(this, R.color.ip_text_secondary_inverted));
             mBtnOk.setTextColor(ContextCompat.getColor(this, R.color.ip_text_secondary_inverted));
         }
-        for (int i = imagePicker.isShowCamera() ? 1 : 0; i < mRecyclerAdapter.getItemCount(); i++) {
-            if (mRecyclerAdapter.getItem(i).path != null && mRecyclerAdapter.getItem(i).path.equals(item.path)) {
-                mRecyclerAdapter.notifyItemChanged(i);
-                return;
+        // 单个条目刷新, 无论是选中还是取消选中
+        mRecyclerAdapter.notifyItemChanged(position);
+
+        // 选中列表也刷新一遍，更新数字展示
+        if (imagePicker.isSelectPicWithSortNumber()) {
+            for (String p : imagePicker.getSelectSortList()) {
+                for (int i = imagePicker.isShowCamera() ? 1 : 0; i < mRecyclerAdapter.getItemCount(); i++) {
+                    if (p != null && p.equals(mRecyclerAdapter.getItem(i).path)) {
+                        mRecyclerAdapter.notifyItemChanged(i);
+                    }
+                }
             }
         }
     }

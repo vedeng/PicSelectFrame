@@ -42,6 +42,7 @@ class MainActivity : AppCompatActivity() {
         const val FLAG_PICKER_LIMIT = 6
 
         var SELECT_WITH_LIST = false
+        var SELECT_WITH_SORT = false
     }
 
     /** 当前选择的所有图片 */
@@ -64,6 +65,9 @@ class MainActivity : AppCompatActivity() {
         }
         rb_select_with_list?.setOnCheckedChangeListener { _, ch ->
             SELECT_WITH_LIST = ch
+        }
+        rb_select_with_sort?.setOnCheckedChangeListener { _, ch ->
+            SELECT_WITH_SORT = ch
         }
 
         main_rec?.adapter = picAdapter
@@ -127,6 +131,7 @@ class MainActivity : AppCompatActivity() {
                 isFilterSelectFormat = true     // 开启选图限定类型功能
                 formatAllowCollection = arrayListOf("jpg", "jpeg", "png", "bmp")    // 定义选图的允许类型
                 selectLimitSize = 3f        // 选图大小限制参数，单位M
+                isSelectPicWithSortNumber = SELECT_WITH_SORT
                 startActivityForResult(intent, CODE_SELECT)
             }
         }

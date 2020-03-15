@@ -3,15 +3,22 @@ package com.pic.picker.adapter;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import com.pic.picker.ImagePicker;
 import com.pic.picker.R;
@@ -20,14 +27,9 @@ import com.pic.picker.ui.ImageBaseActivity;
 import com.pic.picker.ui.ImageGridActivity;
 import com.pic.picker.util.InnerToaster;
 import com.pic.picker.util.Utils;
-import com.pic.picker.view.SuperCheckBox;
+import com.pic.picker.view.CheckTextView;
 
 import java.util.ArrayList;
-import java.util.function.Consumer;
-
-import androidx.core.app.ActivityCompat;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 /**
  * 仿系统图库查看列表适配
@@ -133,7 +135,7 @@ public class ImageRecyclerAdapter extends RecyclerView.Adapter<ViewHolder> {
         ImageView ivThumb;
         View mask;
         View checkView;
-        SuperCheckBox cbCheck;
+        CheckTextView cbCheck;
 
 
         ImageViewHolder(View itemView) {
@@ -142,7 +144,7 @@ public class ImageRecyclerAdapter extends RecyclerView.Adapter<ViewHolder> {
             ivThumb = (ImageView) itemView.findViewById(R.id.iv_thumb);
             mask = itemView.findViewById(R.id.mask);
             checkView=itemView.findViewById(R.id.checkView);
-            cbCheck = (SuperCheckBox) itemView.findViewById(R.id.cb_check);
+            cbCheck = (CheckTextView) itemView.findViewById(R.id.tv_check_num);
             itemView.setLayoutParams(new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, mImageSize));
         }
 
@@ -175,9 +177,19 @@ public class ImageRecyclerAdapter extends RecyclerView.Adapter<ViewHolder> {
                 if (checked) {
                     mask.setVisibility(View.VISIBLE);
                     cbCheck.setChecked(true);
+                    if (imagePicker.isSelectPicWithSortNumber()) {
+                        cbCheck.setBackgroundResource(R.drawable.shape_r12_green);
+                        cbCheck.setText(getTextSort(imageItem.path));
+                    } else {
+                        cbCheck.setBackgroundResource(R.drawable.shape_r12_green);
+                        cbCheck.setText("√");
+                    }
                 } else {
                     mask.setVisibility(View.GONE);
                     cbCheck.setChecked(false);
+                    // BackgroundTint 动态使用时，tint属性不会因为setResource 消失，需要通过setDrawable的方式消除Tint
+                    cbCheck.setBackgroundResource(R.mipmap.icon_uncheck);
+                    cbCheck.setText("");
                 }
             } else {
                 cbCheck.setVisibility(View.GONE);
@@ -185,6 +197,12 @@ public class ImageRecyclerAdapter extends RecyclerView.Adapter<ViewHolder> {
             imagePicker.getImageLoader().displayImage(mActivity, imageItem.path, ivThumb, mImageSize, mImageSize);
         }
 
+    }
+
+    private String getTextSort(String path) {
+        int index = imagePicker.getSelectSortList().indexOf(path);
+        Log.e("角标====", "+ " + (index + 1));
+        return String.valueOf(index + 1);
     }
 
     private boolean checkSelectAllow(ImageItem imageItem) {
@@ -270,4 +288,5 @@ public class ImageRecyclerAdapter extends RecyclerView.Adapter<ViewHolder> {
             });
         }
     }
+
 }
