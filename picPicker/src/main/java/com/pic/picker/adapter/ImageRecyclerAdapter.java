@@ -181,14 +181,14 @@ public class ImageRecyclerAdapter extends RecyclerView.Adapter<ViewHolder> {
                         cbCheck.setBackgroundResource(R.drawable.shape_r12_green);
                         cbCheck.setText(getTextSort(imageItem.path));
                     } else {
-                        cbCheck.setBackgroundResource(R.drawable.shape_r12_green);
-                        cbCheck.setText("√");
+                        cbCheck.setBackgroundResource(R.mipmap.bg_select_green);
+                        cbCheck.setText("");
                     }
                 } else {
                     mask.setVisibility(View.GONE);
                     cbCheck.setChecked(false);
                     // BackgroundTint 动态使用时，tint属性不会因为setResource 消失，需要通过setDrawable的方式消除Tint
-                    cbCheck.setBackgroundResource(R.mipmap.icon_uncheck);
+                    cbCheck.setBackgroundResource(R.mipmap.bg_unselect);
                     cbCheck.setText("");
                 }
             } else {

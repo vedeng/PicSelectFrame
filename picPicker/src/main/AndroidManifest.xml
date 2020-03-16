@@ -7,7 +7,8 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.CAMERA"/><!-- 相机权限 -->
 
-    <application>
+    <!-- AndroidQ -10 存储权限弱化，受到系统限制 需要开启requestLegacyExternalStorage 使用传统权限机制 -->
+    <application android:requestLegacyExternalStorage="true">
         <activity
             android:name="com.pic.picker.ui.FreeCropActivity"
             android:configChanges="orientation|screenSize"

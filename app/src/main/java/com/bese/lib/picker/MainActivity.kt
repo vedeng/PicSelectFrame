@@ -88,7 +88,7 @@ class MainActivity : AppCompatActivity() {
                 }
             })
         }, View.OnClickListener {
-            XXPermissions.with(this).permission(Manifest.permission.READ_EXTERNAL_STORAGE).request(object : OnPermission {
+            XXPermissions.with(this).permission(Manifest.permission.WRITE_EXTERNAL_STORAGE).request(object : OnPermission {
                 override fun noPermission(denied: MutableList<String>?, quick: Boolean) {
                     if (quick) { ToastUtils.showShort("缺少写入存储权限，请去设置页面打开相应权限") }
                     mPhotoPopupWindow?.dismiss()
@@ -122,15 +122,15 @@ class MainActivity : AppCompatActivity() {
                     intent.putExtra(
                         ImageGridActivity.EXTRAS_IMAGES,
                         selectPathList.filter { it.name != ADD_FLAG } as? ArrayList<ImageItem>)
-                    selectLimit = FLAG_PICKER_LIMIT - selectPathList.size + (if (hasAddIcon) 1 else 0)
-                } else {
                     selectLimit = FLAG_PICKER_LIMIT
+                } else {
+                    selectLimit = FLAG_PICKER_LIMIT - selectPathList.size + (if (hasAddIcon) 1 else 0)
                 }
                 isMultiMode = true
                 isSelectLimitShowDialog = true      // 选图超限 以弹窗提示
                 isFilterSelectFormat = true     // 开启选图限定类型功能
                 formatAllowCollection = arrayListOf("jpg", "jpeg", "png", "bmp")    // 定义选图的允许类型
-                selectLimitSize = 3f        // 选图大小限制参数，单位M
+                selectLimitSize = 4f        // 选图大小限制参数，单位M
                 isSelectPicWithSortNumber = SELECT_WITH_SORT
                 startActivityForResult(intent, CODE_SELECT)
             }

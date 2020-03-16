@@ -337,6 +337,7 @@ public class ImagePicker {
         }
         if (mSelectedImages != null) {
             mSelectedImages.clear();
+            selectSortList.clear();
         }
         mCurrentImageFolderPosition = 0;
     }
@@ -428,6 +429,10 @@ public class ImagePicker {
             return;
         }
         this.mSelectedImages = selectedImages;
+        for (ImageItem item : selectedImages) {
+            this.selectSortList.clear();
+            selectSortList.add(item.path);
+        }
     }
 
     private void notifyImageSelectedChanged(int position, ImageItem item, boolean isAdd) {
