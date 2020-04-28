@@ -232,24 +232,25 @@ public class ImageRecyclerAdapter extends RecyclerView.Adapter<ViewHolder> {
 
         // 图片格式限制
         if (imagePicker.isFilterSelectFormat()) {
-            if (!TextUtils.isEmpty(imageItem.name)) {
-                String [] split = imageItem.name.split("\\.");
-                String fix = split[split.length - 1];
-                // 先查允许格式，可能取得的后缀不规范，导致错误的不被限制
-                if (imagePicker.getFormatAllowCollection().size() > 0 && !imagePicker.getFormatAllowCollection().contains(fix)) {
-                    // 允许列表非空，代表有限允许；为空代表全允许；允许列表中无匹配，代表不允许此格式
-                    StringBuilder allow = new StringBuilder();
-                    for (String s : imagePicker.getFormatAllowCollection()) {
-                        allow.append(s.toUpperCase()).append("、");
-                    }
-                    InnerToaster.obj(mActivity).show("文件格式只支持" + allow.substring(0, allow.length() - 1));
-                    return false;
+            String [] split = imageItem.mimeType.split("/");
+            String fix = "";
+            if (split.length > 1) {
+                fix = split[split.length - 1].toLowerCase();
+            }
+            // 先查允许格式，可能取得的后缀不规范，导致错误的不被限制
+            if (imagePicker.getFormatAllowCollection().size() > 0 && !imagePicker.getFormatAllowCollection().contains(fix)) {
+                // 允许列表非空，代表有限允许；为空代表全允许；允许列表中无匹配，代表不允许此格式
+                StringBuilder allow = new StringBuilder();
+                for (String s : imagePicker.getFormatAllowCollection()) {
+                    allow.append(s.toUpperCase()).append("、");
                 }
-                if (imagePicker.getFormatDisallowCollection().size() > 0 && imagePicker.getFormatDisallowCollection().contains(fix)) {
-                    // 禁止列表非空，代表有限禁止；为空代表无禁止；禁止列表中有匹配，代表不允许此格式
-                    InnerToaster.obj(mActivity).show("文件格式不支持" + fix.toUpperCase());
-                    return false;
-                }
+                InnerToaster.obj(mActivity).show("文件格式只支持" + allow.substring(0, allow.length() - 1));
+                return false;
+            }
+            if (imagePicker.getFormatDisallowCollection().size() > 0 && imagePicker.getFormatDisallowCollection().contains(fix)) {
+                // 禁止列表非空，代表有限禁止；为空代表无禁止；禁止列表中有匹配，代表不允许此格式
+                InnerToaster.obj(mActivity).show("文件格式不支持" + fix.toUpperCase());
+                return false;
             }
         }
 

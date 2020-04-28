@@ -152,7 +152,14 @@ public class ImagePicker {
     }
 
     public void setFormatAllowCollection(ArrayList<String> formatAllowCollection) {
-        this.formatAllowCollection = formatAllowCollection;
+        ArrayList<String> allow = new ArrayList<>();
+        if (formatAllowCollection != null && formatAllowCollection.size() > 0) {
+            for (String a : formatAllowCollection) {
+                // 新列表处理类型，全部转换小写，以小写为基准进行判断
+                allow.add(a.toLowerCase());
+            }
+        }
+        this.formatAllowCollection = allow;
     }
 
     public ArrayList<String> getFormatDisallowCollection() {

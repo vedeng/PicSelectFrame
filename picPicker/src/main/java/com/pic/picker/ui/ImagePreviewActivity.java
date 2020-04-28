@@ -1,14 +1,18 @@
 package com.pic.picker.ui;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.format.Formatter;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.TextView;
 
 import com.pic.picker.ImagePicker;
 import com.pic.picker.R;
@@ -70,9 +74,7 @@ public class ImagePreviewActivity extends ImagePreviewBaseActivity implements Im
             @Override
             public void onClick(View v) {
                 ImageItem imageItem = mImageItems.get(mCurrentPosition);
-                int selectLimit = imagePicker.getSelectLimit();
-                if (mCbCheck.isChecked() && selectedImages.size() >= selectLimit) {
-                    InnerToaster.obj(ImagePreviewActivity.this).show(getString(R.string.ip_select_limit, selectLimit));
+                if (mCbCheck.isChecked() && !checkSelectAllow(imageItem)) {
                     mCbCheck.setChecked(false);
                 } else {
                     imagePicker.addSelectedImageItem(mCurrentPosition, imageItem, mCbCheck.isChecked());
@@ -185,6 +187,46 @@ public class ImagePreviewActivity extends ImagePreviewBaseActivity implements Im
         super.onDestroy();
     }
 
+    private boolean checkSelectAllow(ImageItem imageItem) {
+        int selectLimit = imagePicker.getSelectLimit();
+        if (mCbCheck.isChecked() && selectedImages.size() >= selectLimit) {
+            InnerToaster.obj(ImagePreviewActivity.this).show(getString(R.string.ip_select_limit, selectLimit));
+            return false;
+        }
+        // 图片格式限制
+        if (imagePicker.isFilterSelectFormat()) {
+            String [] split = imageItem.mimeType.split("/");
+            String fix = "";
+            if (split.length > 1) {
+                fix = split[split.length - 1].toLowerCase();
+            }
+            // 先查允许格式，可能取得的后缀不规范，导致错误的不被限制
+            if (imagePicker.getFormatAllowCollection().size() > 0 && !imagePicker.getFormatAllowCollection().contains(fix)) {
+                // 允许列表非空，代表有限允许；为空代表全允许；允许列表中无匹配，代表不允许此格式
+                StringBuilder allow = new StringBuilder();
+                for (String s : imagePicker.getFormatAllowCollection()) {
+                    allow.append(s.toUpperCase()).append("、");
+                }
+                InnerToaster.obj(this).show("文件格式只支持" + allow.substring(0, allow.length() - 1));
+                return false;
+            }
+            if (imagePicker.getFormatDisallowCollection().size() > 0 && imagePicker.getFormatDisallowCollection().contains(fix)) {
+                // 禁止列表非空，代表有限禁止；为空代表无禁止；禁止列表中有匹配，代表不允许此格式
+                InnerToaster.obj(this).show("文件格式不支持" + fix.toUpperCase());
+                return false;
+            }
+        }
+
+        // 单张选择大小限制
+        float len = imagePicker.getSelectLimitSize();
+        if (len > 0f && imageItem.size > len * 1024 * 1024) {
+            // 大小限制打开，检查大小是否超限
+            InnerToaster.obj(this).show("文件大小不能超过" + ((int) len) + "M");
+            return false;
+        }
+
+        return true;
+    }
 
     @Override
     public void onImageSingleTap() {
