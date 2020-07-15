@@ -49,20 +49,14 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
 
     // Retrofit库
-    api 'com.squareup.retrofit2:retrofit:2.7.0'
-    api 'com.squareup.retrofit2:converter-gson:2.7.0'
-    api 'com.squareup.okhttp3:logging-interceptor:4.2.2'
-
-    // Glide
-    implementation 'com.github.bumptech.glide:glide:4.11.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.8.1'
+    implementation 'com.squareup.retrofit2:converter-gson:2.8.1'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.4.1'
 
     //    RV适配器
-    implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.47'
-
-    // 权限申请
-    implementation 'com.hjq:xxpermissions:5.5'
+    implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.4'
 
     //    Utils
-    api 'com.blankj:utilcode:1.25.9'
+    implementation 'com.github.vedeng:Bese:1.6.7'
 
 }

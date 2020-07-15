@@ -2,121 +2,91 @@ package com.bese.lib.picker
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.bese.lib.picker.net.PicUploadRequest
-import com.bese.lib.picker.net.PicUploadResponse
+import androidx.fragment.app.FragmentActivity
+import com.bese.lib.picker.helper.PicSelectContact
+import com.bese.lib.picker.helper.PicSelectHelper
 import com.blankj.utilcode.util.ToastUtils
-import com.netlib.BaseCallback
-import com.netlib.upload.ProcessCallback
 import com.pic.picker.ImagePicker
 import com.pic.picker.bean.ImageItem
+import com.pic.picker.ui.ImageGridActivity
 import kotlinx.android.synthetic.main.activity_main.*
-import retrofit2.Call
-import java.io.File
+import java.util.*
 
 /**
  * <>
  *
  * @author bei deng
  */
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), PicSelectContact {
 
     companion object {
         const val CODE_SELECT = 101
         const val CODE_PREVIEW = 102
     }
 
-    private var picHelper: PicShowHelper? = null
+    private var picHelper: PicSelectHelper? = null
+
+    private var hasSelectList: ArrayList<ImageItem> = arrayListOf()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         init()
-
-        picHelper = PicShowHelper(this, main_rec)
-        picHelper?.setPickerRole(isMultiMode = true, selectLimit = 6, selectLimitSize = 4f, isFilterSelectFormat = true, formatAllowCollection = arrayListOf("jpg", "jpeg", "png", "bmp"))
-        picHelper?.buildHelper()
-
+        picHelper = PicSelectHelper(this)
+        picHelper?.setPickerLimit(3)
+        main_rec?.adapter = picHelper?.picSelectAdapter
     }
 
     private fun init() {
         ImagePicker.getInstance().imageLoader = GlideImageLoader()
 
-        main_select?.setOnClickListener {
-            picHelper?.openSelect()
-        }
+        main_select?.setOnClickListener { }
         rb_select_with_list?.setOnCheckedChangeListener { _, ch ->
-            PicShowHelper.SELECT_WITH_LIST = ch
+            PicSelectHelper.SELECT_WITH_LIST = ch
         }
         rb_select_with_sort?.setOnCheckedChangeListener { _, ch ->
-            PicShowHelper.SELECT_WITH_SORT = ch
+            PicSelectHelper.SELECT_WITH_SORT = ch
         }
 
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == CODE_SELECT) {
-            val restList = picHelper?.selectPicResult(data)
-
-            setSelectPicPaths(restList)
-
-            // 自行过滤重复，再上传
-            restList?.forEach {
-                batchUploadPic(it.path)
-            }
-        } else if (requestCode == CODE_PREVIEW) {
-            // 预览选择不会有新增Item，只可能缩减列表长度，所以不需要去重上传。但是可用于其他用途
-            val restList = picHelper?.previewPicResult(data)
-
-            setSelectPicPaths(restList)
-        }
-    }
-
-    private fun setSelectPicPaths(list: ArrayList<ImageItem>?) {
-        // 已选图片路径展示
-        main_select_list?.run {
-            var txt = ""
+        if (requestCode == 101) {                   // 选图
+            val list: ArrayList<ImageItem>? = data?.getSerializableExtra(ImagePicker.EXTRA_RESULT_ITEMS) as? ArrayList<ImageItem>
+            picHelper?.addToSelectList(list)
             list?.forEach {
-                if (it.name != PicShowHelper.ADD_FLAG) {
-                    txt = txt.plus(it.path + "\n\n")
-                }
+                hasSelectList.add(it)
+                ToastUtils.showLong("Prepare to upload : \n ${it.path}")
             }
-            text = txt
         }
     }
 
+    override fun getCurrentActivity(): FragmentActivity? {
+        return this
+    }
 
-    /**
-     * 带进度回调的上传请求
-     */
-    private fun batchUploadPic(filePath: String?) {
-        val file = File(filePath ?: "")
-        if (!file.exists()) {
-            ToastUtils.showShort("$filePath 上传失败，文件不存在")
-            return
-        }
-        val callback = object : ProcessCallback {
-            override fun onProgress(progress: Int, flag: String) {
-                super.onProgress(progress, flag)
-                Log.e("进度回调===", "$progress -- $flag")
-                val item = picHelper?.getSelectPathList()?.find {  it.path.contains(flag) }
-                item?.flag = progress
-                picHelper?.updateItemData(item)
-            }
-        }
-        PicUploadRequest(file, callback).request(PicUploadRequest.Param(file), object : BaseCallback<PicUploadResponse>() {
-            override fun onSuccess(response: PicUploadResponse?) {
-                ToastUtils.showShort(response?.data?.filePath ?: "-------")
-            }
+    override fun openTakePhotoActivity(type: Int) {
+        val intent = Intent(this, ImageGridActivity::class.java).putExtra(ImageGridActivity.EXTRAS_TAKE_PICKERS, true)
+        startActivityForResult(intent, 101)
+    }
 
-            override fun onFailure(call: Call<PicUploadResponse>, t: Throwable) {
-                super.onFailure(call, t)
-                ToastUtils.showShort(t.message)
-            }
-        })
+    override fun openGalleryActivity(type: Int, hasSelectList: ArrayList<ImageItem>?) {
+        val intent = Intent(this, ImageGridActivity::class.java)
+        if (PicSelectHelper.SELECT_WITH_LIST) {     // 如果定制进入相册就选中之前的已选，需要传参。并且需要更改接收返回值时清空之前已选列表。选择上限也需要改。
+            intent.putExtra(ImageGridActivity.EXTRAS_IMAGES, picHelper?.getSelectPicList())
+        }
+        startActivityForResult(intent, 101)
+    }
+
+    override fun removeImageItem(type: Int, item: ImageItem?) {
+        // 移除回调，操作从上传队列移除
+        ToastUtils.showLong("Remove from upload list: \n ${item?.path}")
+        val img = hasSelectList.find { it.path == item?.path }
+        hasSelectList.remove(img)
     }
 
 }

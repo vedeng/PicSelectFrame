@@ -1,19 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <declare-styleable name="ImageRectView">
-        <!--宽高比，1：正方形，2.0：瘦高图，0.5：扁图-->
-        <attr name="squareRatio" format="float"/>
-        <!--圆角大小-->
-        <attr name="squareRadius" format="dimension"/>
-        <!--圆角1大小-->
-        <attr name="squareLeftTopRadius" format="dimension"/>
-        <!--圆角2大小-->
-        <attr name="squareRightTopRadius" format="dimension"/>
-        <!--圆角3大小-->
-        <attr name="squareLeftBottomRadius" format="dimension"/>
-        <!--圆角4大小-->
-        <attr name="squareRightBottomRadius" format="dimension"/>
-    </declare-styleable>
-
 </resources>

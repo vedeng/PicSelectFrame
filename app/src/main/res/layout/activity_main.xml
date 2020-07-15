@@ -40,12 +40,12 @@
             android:id="@+id/main_select"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:text="去 选图"
+            android:text="点击加号选图"
             android:textColor="#ffffff"
             android:textSize="16sp"
             android:gravity="center"
             android:background="@drawable/shape_r12"
-            android:backgroundTint="#0099ff"
+            android:backgroundTint="#3F9f6600"
             app:layout_constraintTop_toBottomOf="@id/main_rec"
             android:layout_margin="10dp"/>
 
