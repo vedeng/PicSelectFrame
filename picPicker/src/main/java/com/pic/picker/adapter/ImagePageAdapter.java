@@ -29,6 +29,9 @@ public class ImagePageAdapter extends PagerAdapter {
     public ImagePageAdapter(Activity activity, ArrayList<ImageItem> images) {
         this.mActivity = activity;
         this.images = images;
+        if (this.images == null) {
+            this.images = new ArrayList<>();
+        }
 
         DisplayMetrics dm = Utils.getScreenPix(activity);
         screenWidth = dm.widthPixels;
@@ -38,6 +41,9 @@ public class ImagePageAdapter extends PagerAdapter {
 
     public void setData(ArrayList<ImageItem> images) {
         this.images = images;
+        if (this.images == null) {
+            this.images = new ArrayList<>();
+        }
     }
 
     public void setPhotoViewClickListener(PhotoViewClickListener listener) {
